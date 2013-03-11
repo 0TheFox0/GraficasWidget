@@ -64,6 +64,8 @@ public:
     void setType(Nightcharts::type t);
     void setLegendType(Nightcharts::legend_type t);
     void setShadows(bool ok = true);
+    void setLabels(bool ok = true);
+    void setValues(bool ok = true);
     void setLegendFont(QFont f);
     void setChartFont(QFont f);
     void draw(QPainter *painter);
@@ -74,9 +76,12 @@ public:
     void drawPie(QPainter *painter);
     void drawHistogramm(QPainter *painter);
     void drawDoubleBar(QPainter *painter);
+    void getPieceValues(float Percentage, pieceNC * piece);
 private:
-    double cX,cY,cW,cH,pW,lX,lY;
+    double m_left,m_top,m_width,m_heigth,m_xAxisPos,pW,legend_X,legend_Y;
     bool shadows;
+    bool labels;
+    bool values;
     QVector<pieceNC> pieces;
     int ctype, cltype;
     QFont font;
@@ -88,7 +93,9 @@ private:
 
     bool isPercent;
     int m_total;
+    float m_maxValue;
     float m_mayor;
+    float m_menor;
 signals:
 
 public slots:

@@ -11,10 +11,13 @@ class Grafica : public QWidget
     Q_PROPERTY(Tipos Tipo READ Tipo WRITE setTipo)
     Q_PROPERTY(bool Porcentual READ Porcentual WRITE setPorcentual)
     Q_PROPERTY(QFont Letra READ Letra WRITE setLetra)
-    Q_PROPERTY(bool Sombra READ Sombra WRITE setSombra)
+    Q_PROPERTY(bool Sombra READ Sombra WRITE verSombra)
+    Q_PROPERTY(bool Etiquetas READ Etiquetas WRITE verEtiquetas)
+    Q_PROPERTY(bool Valores READ Valores WRITE verValores)
     Q_PROPERTY(bool Leyenda READ LeyendaEnabled WRITE EnableLeyenda)
     Q_PROPERTY(Tipo_leyenda TipoLeyenda READ TipoLeyenda WRITE setTipoleyenda)
     Q_PROPERTY(QFont LetraLeyenda READ LetraLeyenda WRITE setLetraLeyenda)
+
 public:
     Grafica(QWidget *parent = 0);
     QSize minimumSizeHint() const;
@@ -41,8 +44,16 @@ public:
                                         this->repaint();}
 
     bool Sombra(){return m_sombra;}
-    void setSombra(bool b){m_sombra = b;
+    void verSombra(bool b){m_sombra = b;
                            this->repaint();}
+
+    bool Etiquetas(){return m_labels;}
+    void verEtiquetas(bool b){m_labels = b;
+                              this->repaint();}
+
+    bool Valores(){return m_values;}
+    void verValores(bool b){m_values = b;
+                            this->repaint();}
 
     QFont LetraLeyenda(){return m_letraLeyenda;}
     void setLetraLeyenda(QFont f){m_letraLeyenda = f;
@@ -60,6 +71,7 @@ public:
     void addItem(QString name, float value);
 
     void removeItem(QString name);
+    void clear(){m_items.clear(); this->repaint();}
 protected:
     void paintEvent(QPaintEvent *);
     void setupBarras(Nightcharts * chart);
@@ -74,6 +86,8 @@ private:
     Tipo_leyenda m_tipoLeyenda;
 
     bool m_sombra;
+    bool m_labels;
+    bool m_values;
 
     QFont m_letraLeyenda;
     QFont m_letra;

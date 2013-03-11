@@ -76,6 +76,8 @@ void Grafica::paintEvent(QPaintEvent * e)
 
     Chart.setIsPercent(m_perc);
     Chart.setShadows(m_sombra);
+    Chart.setLabels(m_labels);
+    Chart.setValues(m_values);
     Chart.setLegendFont(m_letraLeyenda);
     Chart.setChartFont(m_letra);
 
@@ -99,13 +101,13 @@ void Grafica::paintEvent(QPaintEvent * e)
     {
         Chart.addPiece(m_items.at(i));
     }
-/*
-    Chart.addPiece("Item1",QColor(200,10,50),30);
-    Chart.addPiece("Item2",Qt::green,25);
+
+ /*   Chart.addPiece("Item1",QColor(200,10,50),30);
+    Chart.addPiece("Item2",Qt::red,-50);
     Chart.addPiece("Item3",Qt::cyan,15);
     Chart.addPiece("Item4",Qt::yellow,7);
-    Chart.addPiece("Item5",Qt::blue,4);
-*/
+    Chart.addPiece("Item5",Qt::blue,4);*/
+
     Chart.draw(&painter);
     if(m_useLeyenda)
     {
