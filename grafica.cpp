@@ -83,6 +83,9 @@ void Grafica::paintEvent(QPaintEvent * e)
     case Barras:
         setupBarras(&Chart);
         break;
+    case DobleBarra:
+        setupDobleBarras(&Chart);
+        break;
     case Sectores_2D:
         setup2DPie(&Chart);
         break;
@@ -96,13 +99,13 @@ void Grafica::paintEvent(QPaintEvent * e)
     {
         Chart.addPiece(m_items.at(i));
     }
-
-    Chart.addPiece("Item1",QColor(200,10,50),34);
-    Chart.addPiece("Item2",Qt::green,27);
-    Chart.addPiece("Item3",Qt::cyan,14);
+/*
+    Chart.addPiece("Item1",QColor(200,10,50),30);
+    Chart.addPiece("Item2",Qt::green,25);
+    Chart.addPiece("Item3",Qt::cyan,15);
     Chart.addPiece("Item4",Qt::yellow,7);
     Chart.addPiece("Item5",Qt::blue,4);
-
+*/
     Chart.draw(&painter);
     if(m_useLeyenda)
     {
@@ -121,6 +124,20 @@ void Grafica::paintEvent(QPaintEvent * e)
 void Grafica::setupBarras(Nightcharts *chart)
 {
     chart->setType(Nightcharts::Histogramm);
+    if(!m_useLeyenda)
+    {
+         chart->setCords(5,5,this->width()-10,this->height()-10);
+    }
+    else
+    {
+        m_tipoLeyenda = Vertical;
+        chart->setCords(5,5,this->width()/1.5,this->height()-10);
+    }
+}
+
+void Grafica::setupDobleBarras(Nightcharts *chart)
+{
+    chart->setType(Nightcharts::DoubleBar);
     if(!m_useLeyenda)
     {
          chart->setCords(5,5,this->width()-10,this->height()-10);
@@ -163,7 +180,7 @@ void Grafica::setup3DPie(Nightcharts *chart)
     chart->setType(Nightcharts::Dpie);
     if(!m_useLeyenda)
     {
-        chart->setCords(5,5,this->width(),this->height());
+        chart->setCords(5,5,this->width()-10,this->height()-10);
     }
     else
     {

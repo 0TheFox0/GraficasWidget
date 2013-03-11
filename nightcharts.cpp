@@ -37,6 +37,7 @@ Nightcharts::Nightcharts(QObject *parent):
     lX = cX+cW+20;
     lY = cY;
     shadows = true;
+    m_total = 100;
 }
 Nightcharts::~Nightcharts()
 {
@@ -48,10 +49,14 @@ void Nightcharts::addPiece(QString name,Qt::GlobalColor color,float Percentage)
     pieceNC piece;
     piece.addName(name);
     piece.setColor(color);
+    m_mayor = qMax(m_mayor,Percentage);
     if(isPercent)
     {
-        piece.setPerc(Percentage);
+        for (int i = 0; i< pieces.size();i++)
+            pieces[i].setPerc(pieces.at(i).cuanty*100/m_mayor);
+        piece.setPerc(Percentage*100/m_mayor);
         piece.setCuanty(Percentage);
+        m_total = 100;
     }
     else
     {
@@ -59,9 +64,10 @@ void Nightcharts::addPiece(QString name,Qt::GlobalColor color,float Percentage)
         for (int i = 0; i< pieces.size();i++)
             total+= pieces.at(i).cuanty;
         for (int i = 0; i< pieces.size();i++)
-            pieces[i].setPerc(pieces.at(i).cuanty*100/total);
-        piece.setPerc(Percentage*100/total);
+            pieces[i].setPerc(pieces.at(i).cuanty*100/m_mayor);
+        piece.setPerc(Percentage*100/m_mayor);
         piece.setCuanty(Percentage);
+        m_total = (int)total-10;
     }
     pieces.append(piece);
 }
@@ -70,10 +76,14 @@ void Nightcharts::addPiece(QString name, QColor color, float Percentage)
     pieceNC piece;
     piece.addName(name);
     piece.setColor(color);
+    m_mayor = qMax(m_mayor,Percentage);
     if(isPercent)
     {
-        piece.setPerc(Percentage);
+        for (int i = 0; i< pieces.size();i++)
+            pieces[i].setPerc(pieces.at(i).cuanty*100/m_mayor);
+        piece.setPerc(Percentage*100/m_mayor);
         piece.setCuanty(Percentage);
+        m_total = 100;
     }
     else
     {
@@ -81,9 +91,10 @@ void Nightcharts::addPiece(QString name, QColor color, float Percentage)
         for (int i = 0; i< pieces.size();i++)
             total+= pieces.at(i).cuanty;
         for (int i = 0; i< pieces.size();i++)
-            pieces[i].setPerc(pieces.at(i).cuanty*100/total);
-        piece.setPerc(Percentage*100/total);
+            pieces[i].setPerc(pieces.at(i).cuanty*100/m_mayor);
+        piece.setPerc(Percentage*100/m_mayor);
         piece.setCuanty(Percentage);
+        m_total = (int)total-10;
     }
     pieces.append(piece);
 }
@@ -97,7 +108,7 @@ void Nightcharts::setCords(double x, double y, double w, double h)
     this->cX = x;
     this->cY = y;
     this->cW = w;
-    this->cH = h;
+    this->cH = h-20;
     this->lX = cX+cW+20;
     this->lY = cY;
 }
@@ -131,222 +142,292 @@ void Nightcharts::setShadows(bool ok)
     this->shadows = ok;
 }
 
-void Nightcharts::draw(QPainter *painter)
+void Nightcharts::drawPie(QPainter *painter)
 {
-    painter->setRenderHint(QPainter::Antialiasing);
-    painter->setPen(Qt::NoPen);
-    painter->setFont(chart_font);
-    if (this->ctype==Nightcharts::Pie)
+    pW = 0;
+    double pdegree = 0;
+
+    //Options
+    QLinearGradient gradient(cX+0.5*cW,cY,cX+0.5*cW,cY+cH*2.5);
+    gradient.setColorAt(1,Qt::black);
+
+
+    //Draw
+    //pdegree = (360/100)*pieces[i].pPerc;
+    if (shadows)
     {
-      pW = 0;
-      double pdegree = 0;
-
-      //Options
-      QLinearGradient gradient(cX+0.5*cW,cY,cX+0.5*cW,cY+cH*2.5);
-      gradient.setColorAt(1,Qt::black);
-
-
-      //Draw
-      //pdegree = (360/100)*pieces[i].pPerc;
-      if (shadows)
-      {
-          double sumangle = 0;
-          for (int i=0;i<pieces.size();i++)
-          {
-              sumangle += 3.6*pieces[i].pPerc;
-          }
-          painter->setBrush(Qt::darkGray);
-          painter->drawPie(cX,cY+pW+5,cW,cH,palpha*16,sumangle*16);
-      }
-
-      QPen pen;
-      pen.setWidth(2);
-
-      for (int i=0;i<pieces.size();i++)
-      {
-        gradient.setColorAt(0,pieces[i].rgbColor);
-        painter->setBrush(gradient);
-        pen.setColor(pieces[i].rgbColor);
-        painter->setPen(pen);
-        pdegree = 3.6*pieces[i].pPerc;
-        painter->drawPie(cX,cY,cW,cH,palpha*16,pdegree*16);
-        palpha += pdegree;
-      }
-    }
-    else if (this->ctype==Nightcharts::Dpie)
-    {
-        pW = 50;
-        double pdegree = 0;
-        QPointF p;
-
-        QLinearGradient gradient(cX-0.5*cW,cY+cH/2,cX+1.5*cW,cY+cH/2);
-        gradient.setColorAt(0,Qt::black);
-        gradient.setColorAt(1,Qt::white);
-        QLinearGradient gradient_side(cX,cY+cH,cX+cW,cY+cH);
-        gradient_side.setColorAt(0,Qt::black);
-
         double sumangle = 0;
         for (int i=0;i<pieces.size();i++)
         {
             sumangle += 3.6*pieces[i].pPerc;
         }
-        if (shadows)
+        painter->setBrush(Qt::darkGray);
+        painter->drawPie(cX,cY+pW+5,cW,cH,palpha*16,sumangle*16);
+    }
+
+    QPen pen;
+    pen.setWidth(2);
+
+    for (int i=0;i<pieces.size();i++)
+    {
+      gradient.setColorAt(0,pieces[i].rgbColor);
+      painter->setBrush(gradient);
+      pen.setColor(pieces[i].rgbColor);
+      painter->setPen(pen);
+      pdegree = 3.6*pieces[i].pPerc;
+      painter->drawPie(cX,cY,cW,cH,palpha*16,pdegree*16);
+      palpha += pdegree;
+    }
+}
+
+void Nightcharts::drawDPie(QPainter *painter)
+{
+    pW = 50;
+    double pdegree = 0;
+    QPointF p;
+
+    QLinearGradient gradient(cX-0.5*cW,cY+cH/2,cX+1.5*cW,cY+cH/2);
+    gradient.setColorAt(0,Qt::black);
+    gradient.setColorAt(1,Qt::white);
+    QLinearGradient gradient_side(cX,cY+cH,cX+cW,cY+cH);
+    gradient_side.setColorAt(0,Qt::black);
+
+    double sumangle = 0;
+    for (int i=0;i<pieces.size();i++)
+    {
+        sumangle += 3.6*pieces[i].pPerc;
+    }
+    if (shadows)
+    {
+        painter->setBrush(Qt::darkGray);
+        painter->drawPie(cX,cY+pW+5,cW,cH,palpha*16,sumangle*16);
+    }
+    int q = GetQuater(palpha+sumangle);
+
+    if (q ==2 || q==3)
+    {
+        QPointF p = GetPoint(palpha+sumangle);
+        QPointF points[4] =
         {
-            painter->setBrush(Qt::darkGray);
-            painter->drawPie(cX,cY+pW+5,cW,cH,palpha*16,sumangle*16);
-        }
-        int q = GetQuater(palpha+sumangle);
-
-        if (q ==2 || q==3)
+            QPointF(p.x(),p.y()),
+            QPointF(p.x(),p.y()+pW),
+            QPointF(cX+cW/2,cY+cH/2+pW),
+            QPointF(cX+cW/2,cY+cH/2)
+        };
+        gradient_side.setColorAt(1,pieces[pieces.size()-1].rgbColor);
+        painter->setBrush(gradient_side);
+        painter->drawPolygon(points,4);
+    }
+    p = GetPoint(palpha);
+    q = GetQuater(palpha);
+    if (q ==1 || q==4)
+    {
+        QPointF points[4] =
         {
-            QPointF p = GetPoint(palpha+sumangle);
-            QPointF points[4] =
-            {
-                QPointF(p.x(),p.y()),
-                QPointF(p.x(),p.y()+pW),
-                QPointF(cX+cW/2,cY+cH/2+pW),
-                QPointF(cX+cW/2,cY+cH/2)
-            };
-            gradient_side.setColorAt(1,pieces[pieces.size()-1].rgbColor);
-            painter->setBrush(gradient_side);
-            painter->drawPolygon(points,4);
-        }
-        p = GetPoint(palpha);
-        q = GetQuater(palpha);
-        if (q ==1 || q==4)
-        {
-            QPointF points[4] =
-            {
-                QPointF(p.x(),p.y()),
-                QPointF(p.x(),p.y()+pW),
-                QPointF(cX+cW/2,cY+cH/2+pW),
-                QPointF(cX+cW/2,cY+cH/2)
-            };
-            gradient_side.setColorAt(1,pieces[0].rgbColor);
-            painter->setBrush(gradient_side);
-            painter->drawPolygon(points,4);
-        }
+            QPointF(p.x(),p.y()),
+            QPointF(p.x(),p.y()+pW),
+            QPointF(cX+cW/2,cY+cH/2+pW),
+            QPointF(cX+cW/2,cY+cH/2)
+        };
+        gradient_side.setColorAt(1,pieces[0].rgbColor);
+        painter->setBrush(gradient_side);
+        painter->drawPolygon(points,4);
+    }
 
-        for (int i=0;i<pieces.size();i++)
-        {
-          gradient.setColorAt(0.5,pieces[i].rgbColor);
-          painter->setBrush(gradient);
-          pdegree = 3.6*pieces[i].pPerc;
-          painter->drawPie(cX,cY,cW,cH,palpha*16,pdegree*16);
+    for (int i=0;i<pieces.size();i++)
+    {
+      gradient.setColorAt(0.5,pieces[i].rgbColor);
+      painter->setBrush(gradient);
+      pdegree = 3.6*pieces[i].pPerc;
+      painter->drawPie(cX,cY,cW,cH,palpha*16,pdegree*16);
 
-          double a_ = Angle360(palpha);
-          int q_ = GetQuater(palpha);
+      double a_ = Angle360(palpha);
+      int q_ = GetQuater(palpha);
 
-          palpha += pdegree;
+      palpha += pdegree;
 
-          double a = Angle360(palpha);
-          int q = GetQuater(palpha);
+      double a = Angle360(palpha);
+      int q = GetQuater(palpha);
 
-          QPainterPath path;
-          p = GetPoint(palpha);
+      QPainterPath path;
+      p = GetPoint(palpha);
 
-          if((q == 3 || q == 4) && (q_ == 3 || q_ == 4))
+      if((q == 3 || q == 4) && (q_ == 3 || q_ == 4))
+      {
+          // 1)
+          if (a>a_)
           {
-              // 1)
-              if (a>a_)
-              {
-                  QPointF p_old = GetPoint(palpha-pdegree);
-                  path.moveTo(p_old.x()-1,p_old.y());
-                  path.arcTo(cX,cY,cW,cH,palpha-pdegree,pdegree);
-                  path.lineTo(p.x(),p.y()+pW);
-                  path.arcTo(cX,cY+pW,cW,cH,palpha,-pdegree);
-              }
-              // 2)
-              else
-              {
-                  path.moveTo(cX,cY+cH/2);
-                  path.arcTo(cX,cY,cW,cH,180,Angle360(palpha)-180);
-                  path.lineTo(p.x(),p.y()+pW);
-                  path.arcTo(cX,cY+pW,cW,cH,Angle360(palpha),-Angle360(palpha)+180);
-                  path.lineTo(cX,cY+cH/2);
-
-                  path.moveTo(p.x(),p.y());
-                  path.arcTo(cX,cY,cW,cH,palpha-pdegree,360-Angle360(palpha-pdegree));
-                  path.lineTo(cX+cW,cY+cH/2+pW);
-                  path.arcTo(cX,cY+pW,cW,cH,0,-360+Angle360(palpha-pdegree));
-              }
-
+              QPointF p_old = GetPoint(palpha-pdegree);
+              path.moveTo(p_old.x()-1,p_old.y());
+              path.arcTo(cX,cY,cW,cH,palpha-pdegree,pdegree);
+              path.lineTo(p.x(),p.y()+pW);
+              path.arcTo(cX,cY+pW,cW,cH,palpha,-pdegree);
           }
-          // 3)
-          else if((q == 3 || q == 4) && (q_ == 1 || q_ == 2) && a>a_ )
+          // 2)
+          else
           {
               path.moveTo(cX,cY+cH/2);
               path.arcTo(cX,cY,cW,cH,180,Angle360(palpha)-180);
               path.lineTo(p.x(),p.y()+pW);
               path.arcTo(cX,cY+pW,cW,cH,Angle360(palpha),-Angle360(palpha)+180);
               path.lineTo(cX,cY+cH/2);
-          }
-          // 4)
-          else if((q == 1 || q == 2) && (q_ == 3 || q_ == 4) && a<a_)
-          {
-              p = GetPoint(palpha-pdegree);
+
               path.moveTo(p.x(),p.y());
               path.arcTo(cX,cY,cW,cH,palpha-pdegree,360-Angle360(palpha-pdegree));
               path.lineTo(cX+cW,cY+cH/2+pW);
               path.arcTo(cX,cY+pW,cW,cH,0,-360+Angle360(palpha-pdegree));
           }
-          // 5)
-          else if((q ==1 || q==2) && (q_==1 || q_==2) && a<a_)
-          {
-              path.moveTo(cX,cY+cH/2);
-              path.arcTo(cX,cY,cW,cH,180,180);
-              path.lineTo(cX+cW,cY+cH/2+pW);
-              path.arcTo(cX,cY+pW,cW,cH,0,-180);
-              path.lineTo(cX,cY+cH/2);
-          }
-          if (!path.isEmpty())
-          {
-              gradient_side.setColorAt(1,pieces[i].rgbColor);
-              painter->setBrush(gradient_side);
-              painter->drawPath(path);
-          }
-        }
+
+      }
+      // 3)
+      else if((q == 3 || q == 4) && (q_ == 1 || q_ == 2) && a>a_ )
+      {
+          path.moveTo(cX,cY+cH/2);
+          path.arcTo(cX,cY,cW,cH,180,Angle360(palpha)-180);
+          path.lineTo(p.x(),p.y()+pW);
+          path.arcTo(cX,cY+pW,cW,cH,Angle360(palpha),-Angle360(palpha)+180);
+          path.lineTo(cX,cY+cH/2);
+      }
+      // 4)
+      else if((q == 1 || q == 2) && (q_ == 3 || q_ == 4) && a<a_)
+      {
+          p = GetPoint(palpha-pdegree);
+          path.moveTo(p.x(),p.y());
+          path.arcTo(cX,cY,cW,cH,palpha-pdegree,360-Angle360(palpha-pdegree));
+          path.lineTo(cX+cW,cY+cH/2+pW);
+          path.arcTo(cX,cY+pW,cW,cH,0,-360+Angle360(palpha-pdegree));
+      }
+      // 5)
+      else if((q ==1 || q==2) && (q_==1 || q_==2) && a<a_)
+      {
+          path.moveTo(cX,cY+cH/2);
+          path.arcTo(cX,cY,cW,cH,180,180);
+          path.lineTo(cX+cW,cY+cH/2+pW);
+          path.arcTo(cX,cY+pW,cW,cH,0,-180);
+          path.lineTo(cX,cY+cH/2);
+      }
+      if (!path.isEmpty())
+      {
+          gradient_side.setColorAt(1,pieces[i].rgbColor);
+          painter->setBrush(gradient_side);
+          painter->drawPath(path);
+      }
     }
-    else if (this->ctype==Nightcharts::Histogramm)
+}
+
+void Nightcharts::drawHistogramm(QPainter *painter)
+{
+    double pDist = 15;
+    double pW = (cW-(pieces.size())*pDist)/pieces.size();
+
+    QLinearGradient gradient(cX+cW/2,cY,cX+cW/2,cY+cH);
+    gradient.setColorAt(0,Qt::black);
+    QPen pen;
+    pen.setWidth(3);
+
+    for (int i=0;i<pieces.size();i++)
     {
-        double pDist = 15;
-        double pW = (cW-(pieces.size())*pDist)/pieces.size();
-
-        QLinearGradient gradient(cX+cW/2,cY,cX+cW/2,cY+cH);
-        gradient.setColorAt(0,Qt::black);
-        QPen pen;
-        pen.setWidth(3);
-
-        for (int i=0;i<pieces.size();i++)
+        int h = -cH/100*pieces[i].pPerc;
+        h+=12;
+        if (shadows)
         {
-            if (shadows)
-            {
-                painter->setPen(Qt::NoPen);
-                painter->setBrush(Qt::darkGray);
-                painter->drawRect(cX+pDist+i*(pW + pDist)-pDist/2,cY+cH-1,pW,-cH/100*pieces[i].pPerc+pDist/2-5);
-            }
-            gradient.setColorAt(1,pieces[i].rgbColor);
-            painter->setBrush(gradient);
-            pen.setColor(pieces[i].rgbColor);
-            painter->setPen(pen);
-            painter->drawRect(cX+pDist+i*(pW + pDist),cY+cH,pW,-cH/100*pieces[i].pPerc-5);
-            QString label = QString::number(pieces[i].cuanty);
-            if(isPercent)
-                label.append("%");
-            painter->setPen(Qt::SolidLine);
-            painter->drawText(cX+pDist+i*(pW + pDist)+pW/2-painter->fontMetrics().width(label)/2,cY+cH-cH/100*pieces[i].pPerc-painter->fontMetrics().height()/2,label);
+            painter->setPen(Qt::NoPen);
+            painter->setBrush(Qt::darkGray);
+            painter->drawRect(cX+pDist+i*(pW + pDist)-pDist/2,cY+cH-1,pW,h+pDist/2-5);
         }
+        gradient.setColorAt(1,pieces[i].rgbColor);
+        painter->setBrush(gradient);
+        pen.setColor(pieces[i].rgbColor);
+        painter->setPen(pen);
+
+
+        painter->drawRect(cX+pDist+i*(pW + pDist) , cY+cH-2 , pW , h);
+        QString label = QString::number(pieces[i].cuanty);
+        if(isPercent)
+            label.append("%");
         painter->setPen(Qt::SolidLine);
-        for (int i=1;i<10;i++)
-        {
-            painter->drawLine(cX-3,cY+cH/10*i,cX+3,cY+cH/10*i);    //деления по оси Y
-            //painter->drawText(cX-20,cY+cH/10*i,QString::number((10-i)*10)+"%");
-        }
-        painter->drawLine(cX,cY+cH,cX,cY);         //ось Y
-        painter->drawLine(cX,cY,cX+4,cY+10);       //стрелки
-        painter->drawLine(cX,cY,cX-4,cY+10);
-        painter->drawLine(cX,cY+cH,cX+cW,cY+cH);   //ось Х
+        painter->drawText(cX+pDist+i*(pW + pDist)+pW/2-painter->fontMetrics().width(label)/2,cY+cH+11-cH/100*pieces[i].pPerc-painter->fontMetrics().height()/2,label);
+        painter->drawText(cX+pDist+i*(pW + pDist)+pW/2-painter->fontMetrics().width(pieces.at(i).pname)/2,cY+cH+12,pieces.at(i).pname);
+    }
 
+    //Axis
+    painter->setPen(Qt::SolidLine);
+    for (int i=1;i<10;i++)
+    {
+        painter->drawLine(cX-3,cY+cH/10*i,cX+3,cY+cH/10*i);
+        //painter->drawText(cX-20,cY+cH/10*i,QString::number((10-i)*10)+"%");
+    }
+    painter->drawLine(cX,cY+cH,cX,cY);
+    painter->drawLine(cX,cY,cX+4,cY+10);
+    painter->drawLine(cX,cY,cX-4,cY+10);
+    painter->drawLine(cX,cY+cH,cX+cW,cY+cH);
+    //End Axis
+}
+
+void Nightcharts::drawDoubleBar(QPainter *painter)
+{
+    double pDist = 15;
+    double pW = (cW-(pieces.size())*pDist)/pieces.size();
+
+    QLinearGradient gradient(cX+cW/2,cY,cX+cW/2,cY+cH);
+    gradient.setColorAt(0,Qt::black);
+    QPen pen;
+    pen.setWidth(3);
+
+    for (int i=0;i<pieces.size();i++)
+    {
+        if (shadows)
+        {
+            painter->setPen(Qt::NoPen);
+            painter->setBrush(Qt::darkGray);
+            painter->drawRect(cX+pDist+i*(pW + pDist)-pDist/2,cY+cH-1,pW,-cH/m_total*pieces[i].pPerc+pDist/2-5);
+        }
+        gradient.setColorAt(1,pieces[i].rgbColor);
+        painter->setBrush(gradient);
+        pen.setColor(pieces[i].rgbColor);
+        painter->setPen(pen);
+        painter->drawRect(cX+pDist+i*(pW + pDist),cY+cH,pW,-cH/m_total*pieces[i].pPerc-5);
+        QString label = QString::number(pieces[i].cuanty);
+        if(isPercent)
+            label.append("%");
+        painter->setPen(Qt::SolidLine);
+        painter->drawText(cX+pDist+i*(pW + pDist)+pW/2-painter->fontMetrics().width(label)/2,cY+cH-cH/100*pieces[i].pPerc-painter->fontMetrics().height()/2,label);
+    }
+    painter->setPen(Qt::SolidLine);
+
+    //Y-axis cutter lines
+    for (int i=1;i<10;i++)
+    {
+        painter->drawLine(cX-3,cY+cH/10*i,cX+3,cY+cH/10*i);
+        //painter->drawText(cX-20,cY+cH/10*i,QString::number((10-i)*10)+"%");
+    }
+    painter->drawLine(cX,cY+cH,cX,cY);   //X-axis
+    painter->drawLine(cX,cY,cX+4,cY+10); //Y-Axis rigth-arrow
+    painter->drawLine(cX,cY,cX-4,cY+10); //Y-Axis left-arrow
+    painter->drawLine(cX,cY+cH,cX+cW,cY+cH);//Y-Axis
+}
+
+void Nightcharts::draw(QPainter *painter)
+{
+    painter->setRenderHint(QPainter::Antialiasing);
+    painter->setPen(Qt::NoPen);
+    painter->setFont(chart_font);
+
+    switch (this->ctype) {
+    case Pie:
+        drawPie(painter);
+        break;
+    case Dpie:
+        drawDPie(painter);
+        break;
+    case Histogramm:
+        drawHistogramm(painter);
+        break;
+    case DoubleBar:
+        drawDoubleBar(painter);
+        break;
+    default:
+        break;
     }
 }
 

@@ -21,7 +21,7 @@ public:
 
 
     Q_ENUMS(Tipos)
-    enum Tipos {Barras , Sectores_2D, Sectores_3D };
+    enum Tipos {Barras , DobleBarra , Sectores_2D, Sectores_3D };
     Tipos Tipo(){return m_type;}
     void setTipo(Tipos t){m_type = t;
                           this->repaint();}
@@ -63,6 +63,7 @@ public:
 protected:
     void paintEvent(QPaintEvent *);
     void setupBarras(Nightcharts * chart);
+    void setupDobleBarras(Nightcharts * chart);
     void setup2DPie(Nightcharts * chart);
     void setup3DPie(Nightcharts * chart);
 private:

@@ -54,7 +54,7 @@ public:
 
     explicit Nightcharts(QObject* parent = 0);
     ~Nightcharts();
-    enum type { Histogramm , Pie, Dpie };
+    enum type {  Histogramm , DoubleBar , Pie, Dpie };
     enum legend_type{ Vertical, Round };
     void addPiece(QString name,Qt::GlobalColor,float Percentage);
     void addPiece(QString name,QColor, float Percentage);
@@ -69,7 +69,11 @@ public:
     void draw(QPainter *painter);
     void drawLegend(QPainter *painter);
     double palpha;
-    void setIsPercent(bool b ){isPercent = b;}
+    void setIsPercent(bool b ){isPercent = b; m_total = 100;}
+    void drawDPie(QPainter *painter);
+    void drawPie(QPainter *painter);
+    void drawHistogramm(QPainter *painter);
+    void drawDoubleBar(QPainter *painter);
 private:
     double cX,cY,cW,cH,pW,lX,lY;
     bool shadows;
@@ -83,6 +87,8 @@ private:
     double Angle360(double angle);
 
     bool isPercent;
+    int m_total;
+    float m_mayor;
 signals:
 
 public slots:
