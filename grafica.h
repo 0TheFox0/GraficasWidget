@@ -70,6 +70,10 @@ public:
     void addItem(QString name, Qt::GlobalColor color , float value);
     void addItem(QString name, float value);
 
+    void addItem(QString name, QColor color , QVector<float> value);
+    void addItem(QString name, Qt::GlobalColor color , QVector<float> value);
+    void addItem(QString name, QVector<float> value);
+
     void removeItem(QString name);
     void clear(){m_items.clear(); this->repaint();}
 protected:

@@ -53,6 +53,66 @@ void Grafica::addItem(QString name, float value)
     this->repaint();
 }
 
+void Grafica::addItem(QString name, QColor color, QVector<float> value)
+{
+    pieceNC p;
+    p.pname = name;
+
+    p.setColor(color);
+
+    for(int i=0;i<value.size();i++)
+    {
+        QPair<float,float> par;
+        par.first = value.at(i);
+        par.second = 0;
+        p.values.append(par);
+    }
+
+    m_items.append(p);
+    this->repaint();
+}
+
+void Grafica::addItem(QString name, Qt::GlobalColor color, QVector<float> value)
+{
+    pieceNC p;
+    p.pname = name;
+
+    p.setColor(color);
+
+    for(int i=0;i<value.size();i++)
+    {
+        QPair<float,float> par;
+        par.first = value.at(i);
+        par.second = 0;
+        p.values.append(par);
+    }
+
+    m_items.append(p);
+    this->repaint();
+}
+
+void Grafica::addItem(QString name, QVector<float> value)
+{
+    pieceNC p;
+    p.pname = name;
+
+    int r = qrand()%255;
+    int g = qrand()%255;
+    int b = qrand()%255;
+    p.setColor(QColor(r,g,b));
+
+    for(int i=0;i<value.size();i++)
+    {
+        QPair<float,float> par;
+        par.first = value.at(i);
+        par.second = 0;
+        p.values.append(par);
+    }
+
+    m_items.append(p);
+    this->repaint();
+}
+
 void Grafica::removeItem(QString name)
 {
     for (int i =0; i<m_items.size(); i++)
@@ -97,9 +157,19 @@ void Grafica::paintEvent(QPaintEvent * e)
     }
 
 
-    for (int i=0;i<m_items.size();i++)
+    if(m_type == DobleBarra)
     {
-        Chart.addPiece(m_items.at(i));
+        for (int i=0;i<m_items.size();i++)
+        {
+            Chart.addPiece4Multi(m_items.at(i));
+        }
+    }
+    else
+    {
+        for (int i=0;i<m_items.size();i++)
+        {
+            Chart.addPiece(m_items.at(i));
+        }
     }
 
  /*   Chart.addPiece("Item1",QColor(200,10,50),30);
@@ -128,7 +198,7 @@ void Grafica::setupBarras(Nightcharts *chart)
     chart->setType(Nightcharts::Histogramm);
     if(!m_useLeyenda)
     {
-         chart->setCords(5,5,this->width()-10,this->height()-10);
+         chart->setCords(0,0,this->width(),this->height());
     }
     else
     {

@@ -24,6 +24,7 @@
 #include <QObject>
 #include <QPainter>
 #include <QVector>
+#include <QPair>
 #include <QDebug>
 #include <QLinearGradient>
 #include <math.h>
@@ -43,6 +44,10 @@ public:
     float pPerc;
     float cuanty;
 
+    QVector< QPair<float,float> >values;
+    float maxValue;
+    float minValue;
+
 private:
 
 };
@@ -58,7 +63,14 @@ public:
     enum legend_type{ Vertical, Round };
     void addPiece(QString name,Qt::GlobalColor,float Percentage);
     void addPiece(QString name,QColor, float Percentage);
+
+    void addPiece(QString name,Qt::GlobalColor,QVector<float>values);
+    void addPiece(QString name,QColor, QVector<float>values);
+    void addPiece(QString name,QColor, QVector< QPair <float, float > >values);
+
     void addPiece(pieceNC piece);
+    void addPiece4Multi(pieceNC piece);
+
     void setCords(double x, double y, double w, double h);
     void setLegendCords(double x, double y);
     void setType(Nightcharts::type t);
@@ -76,7 +88,9 @@ public:
     void drawPie(QPainter *painter);
     void drawHistogramm(QPainter *painter);
     void drawDoubleBar(QPainter *painter);
-    void getPieceValues(float Percentage, pieceNC * piece);
+
+    void getPieceValue(float Percentage, pieceNC * piece);
+    void getPieceMultiValues(pieceNC * piece);
 private:
     double m_left,m_top,m_width,m_heigth,m_xAxisPos,pW,legend_X,legend_Y;
     bool shadows;
