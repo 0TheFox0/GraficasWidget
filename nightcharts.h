@@ -91,12 +91,15 @@ public:
 
     void getPieceValue(float Percentage, pieceNC * piece);
     void getPieceMultiValues(pieceNC * piece);
+    void addDoubleBarColor(QString,QColor);
+    void addDoubleBarColor(QPair<QString,QColor> pair);
 private:
     double m_left,m_top,m_width,m_heigth,m_xAxisPos,pW,legend_X,legend_Y;
     bool shadows;
     bool labels;
     bool values;
     QVector<pieceNC> pieces;
+    QVector<QPair<QString , QColor> >DoubleBarColors;
     int ctype, cltype;
     QFont font;
     QFont chart_font;

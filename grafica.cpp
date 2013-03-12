@@ -113,6 +113,14 @@ void Grafica::addItem(QString name, QVector<float> value)
     this->repaint();
 }
 
+void Grafica::addColorMultibarras(QString nombre, QColor color)
+{
+    QPair<QString, QColor> par;
+    par.first = nombre;
+    par.second = color;
+    m_DoubleBarColors.append(par);
+}
+
 void Grafica::removeItem(QString name)
 {
     for (int i =0; i<m_items.size(); i++)
@@ -132,6 +140,7 @@ void Grafica::paintEvent(QPaintEvent * e)
     QPainter painter;
 
     painter.begin(this);
+    painter.drawRect(0,0,this->width()-1,this->height()-1);
     Nightcharts Chart;
 
     Chart.setIsPercent(m_perc);
@@ -160,9 +169,10 @@ void Grafica::paintEvent(QPaintEvent * e)
     if(m_type == DobleBarra)
     {
         for (int i=0;i<m_items.size();i++)
-        {
             Chart.addPiece4Multi(m_items.at(i));
-        }
+
+        for (int i = 0; i<m_DoubleBarColors.size();i++)
+            Chart.addDoubleBarColor(m_DoubleBarColors.at(i));
     }
     else
     {
@@ -203,7 +213,7 @@ void Grafica::setupBarras(Nightcharts *chart)
     else
     {
         m_tipoLeyenda = Vertical;
-        chart->setCords(5,5,this->width()/1.5,this->height()-10);
+        chart->setCords(0,0,this->width()/1.5,this->height());
     }
 }
 
@@ -212,12 +222,12 @@ void Grafica::setupDobleBarras(Nightcharts *chart)
     chart->setType(Nightcharts::DoubleBar);
     if(!m_useLeyenda)
     {
-         chart->setCords(5,5,this->width()-10,this->height()-10);
+         chart->setCords(0,0,this->width(),this->height()-20);
     }
     else
     {
         m_tipoLeyenda = Vertical;
-        chart->setCords(5,5,this->width()/1.5,this->height()-10);
+        chart->setCords(0,0,this->width()/1.5,this->height()-20);
     }
 }
 

@@ -73,6 +73,7 @@ public:
     void addItem(QString name, QColor color , QVector<float> value);
     void addItem(QString name, Qt::GlobalColor color , QVector<float> value);
     void addItem(QString name, QVector<float> value);
+    void addColorMultibarras(QString nombre, QColor  color);
 
     void removeItem(QString name);
     void clear(){m_items.clear(); this->repaint();}
@@ -97,6 +98,7 @@ private:
     QFont m_letra;
 
     QList<pieceNC> m_items;
+    QVector<QPair<QString , QColor> >m_DoubleBarColors;
 };
 
 #endif
