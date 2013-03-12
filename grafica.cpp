@@ -140,7 +140,7 @@ void Grafica::paintEvent(QPaintEvent * e)
     QPainter painter;
 
     painter.begin(this);
-    painter.drawRect(0,0,this->width()-1,this->height()-1);
+   // painter.drawRect(0,0,this->width()-1,this->height()-1);
     Nightcharts Chart;
 
     Chart.setIsPercent(m_perc);
