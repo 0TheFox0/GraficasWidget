@@ -56,20 +56,38 @@ void Nightcharts::getPieceValue(float Percentage, pieceNC *piece)
 
     if(isPercent)
     {
+        /*
         for (int i = 0; i< pieces.size();i++)
             pieces[i].setPerc(pieces.at(i).cuanty*100/m_maxValue);
         piece->setPerc(Percentage*100/m_maxValue);
+        piece->setCuanty(Percentage);*/
         piece->setCuanty(Percentage);
+        piece->setPerc(Percentage);
         m_total = 100;
         m_xAxisPos = m_top + m_heigth - 15;
         pieces.append(*piece);
     }
     else
     {
-        int range = m_mayor;
+        int range=0;
 
-        if(m_menor < 0)
-            range -= m_menor;
+        if(this->ctype!= Pie && this->ctype!=Dpie)
+        {
+            range = m_mayor;
+
+            if(m_menor < 0)
+                range -= m_menor;
+        }
+        else
+        {
+            if(Percentage < 0)
+                Percentage = -Percentage;
+            range = Percentage;
+
+            for (int i = 0; i< pieces.size();i++)
+                range +=pieces.at(i).cuanty;
+        }
+
 
         for (int i = 0; i< pieces.size();i++)
         {
@@ -274,6 +292,71 @@ void Nightcharts::addPiece4Multi(pieceNC piece)
 {
     addPiece(piece.pname,piece.rgbColor,piece.values);
 }
+
+void Nightcharts::addLine(lineNC lNc)
+{
+    for(int i=0;i < lNc.points.size();i++)
+    {
+        m_menor = qMin(m_menor,lNc.points.at(i));
+        m_mayor = qMax(m_mayor,lNc.points.at(i));
+
+        if(lNc.points.at(i)>=0)
+            m_maxValue = qMax(m_maxValue,lNc.points.at(i));
+        else
+            m_maxValue = qMax(m_maxValue,-lNc.points.at(i));
+    }
+    int range = m_mayor;
+    if(m_menor < 0)
+        range-= m_menor;
+    if(m_mayor == m_maxValue)
+    {
+        double x = m_maxValue/range;
+        int y = m_heigth*x;
+        m_xAxisPos = m_top + y -12;
+    }
+    else
+    {
+        double x = m_maxValue/range;
+        int y = m_heigth*x;
+        m_xAxisPos = m_top + m_heigth - y + 12;
+    }
+    lineas.append(lNc);
+}
+
+void Nightcharts::addLines(QVector<lineNC> lines)
+{
+    for (int x = 0; x<lines.size();x++)
+    {
+        for(int i=0;i < lines.at(x).points.size();i++)
+        {
+            m_menor = qMin(m_menor,lines.at(x).points.at(i));
+            m_mayor = qMax(m_mayor,lines.at(x).points.at(i));
+
+            if(lines.at(x).points.at(i)>=0)
+                m_maxValue = qMax(m_maxValue,lines.at(x).points.at(i));
+            else
+                m_maxValue = qMax(m_maxValue,-lines.at(x).points.at(i));
+        }
+    }
+    int range = m_mayor;
+    if(m_menor < 0)
+        range-= m_menor;
+
+    if(m_mayor == m_maxValue)
+    {
+        double x = m_maxValue/range;
+        int y = m_heigth*x;
+        m_xAxisPos = m_top + y -12;
+    }
+    else
+    {
+        double x = m_maxValue/range;
+        int y = m_heigth*x;
+        m_xAxisPos = m_top + m_heigth - y + 12;
+    }
+    lineas = lines;
+}
+
 void Nightcharts::setCords(double x, double y, double w, double h)
 {
     this->m_left = x+5;
@@ -529,11 +612,15 @@ void Nightcharts::drawHistogramm(QPainter *painter)
             painter->setPen(pen);
             painter->drawRect(m_left+pieceXPos , m_top+m_xAxisPos-2 , pieceWidth , h);
 
-            QString label = QString::number(pieces[i].cuanty);
-            label.append("%");
-            painter->setPen(Qt::SolidLine);            
-            painter->drawText(m_left+pieceXPos+pieceWidth/2-painter->fontMetrics().width(label)/2,m_top+m_xAxisPos+11-m_xAxisPos/100*pieces[i].pPerc-painter->fontMetrics().height()/2,label);
-            painter->drawText(m_left+pieceXPos+pieceWidth/2-painter->fontMetrics().width(pieces.at(i).pname)/2,m_top+m_xAxisPos+12,pieces.at(i).pname);
+            if(values)
+            {
+                QString label = QString::number(pieces[i].cuanty);
+                label.append("%");
+                painter->setPen(Qt::SolidLine);
+                painter->drawText(m_left+pieceXPos+pieceWidth/2-painter->fontMetrics().width(label)/2,m_top+m_xAxisPos+11-m_xAxisPos/100*pieces[i].pPerc-painter->fontMetrics().height()/2,label);
+            }
+            if(labels)
+                painter->drawText(m_left+pieceXPos+pieceWidth/2-painter->fontMetrics().width(pieces.at(i).pname)/2,m_top+m_xAxisPos+12,pieces.at(i).pname);
         }
     }
     else
@@ -729,6 +816,164 @@ void Nightcharts::drawDoubleBar(QPainter *painter)
     //End Axis
 }
 
+void Nightcharts::drawLines(QPainter *painter)
+{
+    int range = m_mayor;
+    if(m_menor<0)
+        range -= m_menor;
+
+    double pDist;
+    int start = m_left+15;
+    pDist = (m_width-start)/(LinesStop.size()-1);
+    QVector<float> xPositions;
+    for(int i=0;i<LinesStop.size();i++)
+        xPositions.append(start+pDist*i);
+
+    if(labels && !LinesStop.isEmpty())
+    {
+        xPositions.clear();
+        start = m_left+painter->fontMetrics().width(LinesStop.at(0));
+            pDist = (m_width-start-painter->fontMetrics().width(LinesStop.last()))/(LinesStop.size()-1);
+            for(int i=0;i<LinesStop.size();i++)
+                xPositions.append(start+pDist*i);
+    }
+
+    if(shadows)
+    {
+        painter->setPen(Qt::NoPen);
+        for(int i=0;i<lineas.size();i++)
+        {
+            QColor c = lineas.at(i).color;
+            c.setAlpha(5);
+
+            QColor c1 = lineas.at(i).color;
+            c1.setAlpha(50);
+
+
+            int use = qMin(lineas.at(i).points.size(), LinesStop.size());
+            int pointCount = use + 2;
+
+            QPoint points[pointCount];
+
+
+            for (int a=0;a<pointCount-2;a++)
+            {
+                float _p = lineas.at(i).points.at(a);
+                if(_p < 0)
+                    _p = -_p;
+
+                double x = _p/range;
+                double y = m_heigth*x;
+
+                if(lineas.at(i).points.at(a)>=0)
+                    points[a] = QPoint(xPositions.at(a),m_top + m_xAxisPos - y);
+                else
+                    points[a] = QPoint(xPositions.at(a),m_top + m_xAxisPos + y);
+            }
+
+            points[pointCount-2] = QPoint(xPositions.at(use-1),m_top+m_xAxisPos);
+            points[pointCount-1] = QPoint(xPositions.at(0),m_top + m_xAxisPos);
+
+            int _max=0;
+            int _min=0;
+            for (int a=0;a<pointCount-2;a++)
+            {
+                _max = qMax(_max,points[a].y());
+                _min = qMin(_min,points[a].y());
+            }
+            QLinearGradient gradient(m_left,_max,m_left,_min);
+            gradient.setColorAt(0,c);
+            gradient.setColorAt(0.5,c1);
+            gradient.setColorAt(1,c);
+            painter->setBrush(gradient);
+
+            painter->drawPolygon(points,pointCount);
+        }
+    }
+    if (labels)
+    {
+        painter->setPen(Qt::SolidLine);
+        for(int i=0;i<LinesStop.size();i++)
+        {
+            painter->drawText(xPositions.at(i)-painter->fontMetrics().width(LinesStop.at(i))/2,m_top+m_heigth+40+painter->fontMetrics().height(),LinesStop.at(i));
+        }
+    }
+
+    for(int i=0;i<lineas.size();i++)
+    {
+        int use = qMin(lineas.at(i).points.size(), LinesStop.size());
+        int pointCount = use;
+
+        QPoint points[pointCount];
+
+        QPen pen;
+        pen.setColor(lineas.at(i).color);
+        pen.setWidth(2);
+        for (int a=0;a<pointCount;a++)
+        {
+            float _p = lineas.at(i).points.at(a);
+            if(_p < 0)
+                _p = -_p;
+
+            double x = _p/range;
+            double y = m_heigth*x;
+
+            if(lineas.at(i).points.at(a)>=0)
+                points[a] = QPoint(xPositions.at(a),m_top + m_xAxisPos - y);
+            else
+                points[a] = QPoint(xPositions.at(a),m_top + m_xAxisPos + y);
+
+        }
+        painter->setPen(pen);
+        painter->drawPolyline(points,pointCount);
+        QColor c = lineas.at(i).color;
+        c.setAlpha(50);
+        painter->setBrush(c);
+        for (int a=0;a<pointCount;a++)
+            painter->drawEllipse(points[a],3,3);
+
+        if(values)
+        {
+            painter->setPen(Qt::SolidLine);
+            for (int a=0;a<pointCount;a++)
+            {
+                QString s = QString::number(lineas.at(i).points.at(a));
+                bool above = true;
+                if(a!= pointCount-1)
+                {
+                    if(points[a].y()> points[a+1].y())
+                        above = false;
+                }
+                if(/*points[a].y() <= m_top + m_xAxisPos*/above)
+                {
+                    painter->drawText(points[a].x()-painter->fontMetrics().width(s),points[a].y()-painter->fontMetrics().height()/2,s);
+                }
+                else
+                {
+                    painter->drawText(points[a].x()-painter->fontMetrics().width(s),points[a].y()+painter->fontMetrics().height(),s);
+                }
+            }
+        }
+    }
+    //Axis
+    painter->setPen(Qt::SolidLine);
+
+    painter->drawLine(m_left,m_top+m_heigth+25,m_left,m_top-15);
+
+    if(m_mayor >0 )
+    {
+        painter->drawLine(m_left,m_top-15,m_left+4,m_top-5);
+        painter->drawLine(m_left,m_top-15,m_left-4,m_top-5);
+    }
+    if(m_menor < 0)
+    {
+        painter->drawLine(m_left,m_top+m_heigth+25,m_left+4,m_top+m_heigth+15);
+        painter->drawLine(m_left,m_top+m_heigth+25,m_left-4,m_top+m_heigth+15);
+    }
+    painter->drawLine(m_left,m_top+m_xAxisPos,m_left+m_width,m_top+m_xAxisPos);
+    //End Axis
+}
+
 void Nightcharts::draw(QPainter *painter)
 {
     painter->setRenderHint(QPainter::Antialiasing);
@@ -748,8 +993,41 @@ void Nightcharts::draw(QPainter *painter)
     case DoubleBar:
         drawDoubleBar(painter);
         break;
+    case Lines:
+        drawLines(painter);
+        break;
     default:
         break;
+    }
+}
+
+void Nightcharts::drawDoubleBarLegend(QPainter *painter)
+{
+    int dist = 5;
+    painter->setBrush(Qt::white);
+    for (int i=DoubleBarColors.size()-1;i>=0;i--)
+    {
+        painter->setBrush(DoubleBarColors.at(i).second);
+        float x = legend_X+dist;
+        float y = legend_Y+dist+i*(painter->fontMetrics().height()+2*dist);
+        painter->drawRect(x,y,painter->fontMetrics().height(),painter->fontMetrics().height());
+        QString s = DoubleBarColors.at(i).first;
+        painter->drawText(x+painter->fontMetrics().height()+dist,y+painter->fontMetrics().height()/2+dist,s);
+    }
+}
+
+void Nightcharts::drawLinesLegend(QPainter *painter)
+{
+    int dist = 5;
+    painter->setBrush(Qt::white);
+    for (int i=lineas.size()-1;i>=0;i--)
+    {
+        painter->setBrush(lineas.at(i).color);
+        float x = legend_X+dist;
+        float y = legend_Y+dist+i*(painter->fontMetrics().height()+2*dist);
+        painter->drawRect(x,y,painter->fontMetrics().height(),painter->fontMetrics().height());
+        QString s = lineas.at(i).name;
+        painter->drawText(x+painter->fontMetrics().height()+dist,y+painter->fontMetrics().height()/2+dist,s);
     }
 }
 
@@ -757,19 +1035,9 @@ void Nightcharts::drawLegend(QPainter *painter)
 {
     //double ptext = 25;
     if(this->ctype == DoubleBar)
-    {
-        int dist = 5;
-        painter->setBrush(Qt::white);
-        for (int i=DoubleBarColors.size()-1;i>=0;i--)
-        {
-            painter->setBrush(DoubleBarColors.at(i).second);
-            float x = legend_X+dist;
-            float y = legend_Y+dist+i*(painter->fontMetrics().height()+2*dist);
-            painter->drawRect(x,y,painter->fontMetrics().height(),painter->fontMetrics().height());
-            QString s = DoubleBarColors.at(i).first;
-            painter->drawText(x+painter->fontMetrics().height()+dist,y+painter->fontMetrics().height()/2+dist,s);
-        }
-    }
+        drawDoubleBarLegend(painter);
+    else if(this->ctype == Lines)
+        drawLinesLegend(painter);
     else
     {
         double angle = palpha;

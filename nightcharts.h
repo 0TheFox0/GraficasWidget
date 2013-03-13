@@ -52,6 +52,14 @@ private:
 
 };
 
+class lineNC
+{
+public:
+    QString name;
+    QVector<float> points;
+    QColor color;
+};
+
 class Nightcharts : public QObject
 {
     Q_ENUMS(type)
@@ -59,7 +67,7 @@ public:
 
     explicit Nightcharts(QObject* parent = 0);
     ~Nightcharts();
-    enum type {  Histogramm , DoubleBar , Pie, Dpie };
+    enum type {  Histogramm , DoubleBar , Pie, Dpie , Lines };
     enum legend_type{ Vertical, Round };
     void addPiece(QString name,Qt::GlobalColor,float Percentage);
     void addPiece(QString name,QColor, float Percentage);
@@ -70,6 +78,11 @@ public:
 
     void addPiece(pieceNC piece);
     void addPiece4Multi(pieceNC piece);
+
+    void addLine(lineNC lNc);
+    void addLines(QVector< lineNC> lines);
+    void addLineStop(QString s){LinesStop.append(s);}
+    void addLineStops(QStringList sl){LinesStop = sl;}
 
     void setCords(double x, double y, double w, double h);
     void setLegendCords(double x, double y);
@@ -88,11 +101,14 @@ public:
     void drawPie(QPainter *painter);
     void drawHistogramm(QPainter *painter);
     void drawDoubleBar(QPainter *painter);
+    void drawLines(QPainter *painter);
 
     void getPieceValue(float Percentage, pieceNC * piece);
     void getPieceMultiValues(pieceNC * piece);
     void addDoubleBarColor(QString,QColor);
     void addDoubleBarColor(QPair<QString,QColor> pair);
+    void drawDoubleBarLegend(QPainter *painter);
+    void drawLinesLegend(QPainter * painter);
 private:
     double m_left,m_top,m_width,m_heigth,m_xAxisPos,pW,legend_X,legend_Y;
     bool shadows;
@@ -100,10 +116,13 @@ private:
     bool values;
     QVector<pieceNC> pieces;
     QVector<QPair<QString , QColor> >DoubleBarColors;
+
+    QStringList LinesStop;
+    QVector< lineNC > lineas;
+
     int ctype, cltype;
     QFont font;
     QFont chart_font;
-    //QPainter *cpainter;
     QPointF GetPoint(double angle, double R1 = 0, double R2 = 0);
     int GetQuater(double angle);
     double Angle360(double angle);

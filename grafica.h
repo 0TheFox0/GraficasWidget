@@ -24,7 +24,7 @@ public:
 
 
     Q_ENUMS(Tipos)
-    enum Tipos {Barras , DobleBarra , Sectores_2D, Sectores_3D };
+    enum Tipos {Barras , DobleBarra , Sectores_2D, Sectores_3D , Lineas};
     Tipos Tipo(){return m_type;}
     void setTipo(Tipos t){m_type = t;
                           this->repaint();}
@@ -75,14 +75,20 @@ public:
     void addItem(QString name, QVector<float> value);
     void addColorMultibarras(QString nombre, QColor  color);
 
+    void addLinea(QString nombre, QVector<float> points , QColor color);
+    void addLinea(QString nombre, QVector<float> points);
+    void addLineaStop(QString s){m_lineStops.append(s);}
+    void addLineaStops(QStringList ls){m_lineStops.append(ls);}
+
     void removeItem(QString name);
-    void clear(){m_items.clear(); this->repaint();}
+    void clear(){m_items.clear(); m_lines.clear(); m_lineStops.clear();this->repaint();}
 protected:
     void paintEvent(QPaintEvent *);
     void setupBarras(Nightcharts * chart);
     void setupDobleBarras(Nightcharts * chart);
     void setup2DPie(Nightcharts * chart);
     void setup3DPie(Nightcharts * chart);
+    void setupLineas(Nightcharts * chart);
 private:
     Tipos m_type;
     bool m_perc;
@@ -99,6 +105,9 @@ private:
 
     QList<pieceNC> m_items;
     QVector<QPair<QString , QColor> >m_DoubleBarColors;
+
+    QVector< lineNC >m_lines;
+    QStringList m_lineStops;
 };
 
 #endif

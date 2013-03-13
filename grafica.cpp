@@ -121,6 +121,23 @@ void Grafica::addColorMultibarras(QString nombre, QColor color)
     m_DoubleBarColors.append(par);
 }
 
+void Grafica::addLinea(QString nombre, QVector<float> points, QColor color)
+{
+    lineNC lnc;
+    lnc.name = nombre;
+    lnc.points = points;
+    lnc.color = color;
+    m_lines.append(lnc);
+}
+
+void Grafica::addLinea(QString nombre, QVector<float> points)
+{
+    int r = qrand()%255;
+    int g = qrand()%255;
+    int b = qrand()%255;
+    addLinea(nombre,points,QColor(r,g,b));
+}
+
 void Grafica::removeItem(QString name)
 {
     for (int i =0; i<m_items.size(); i++)
@@ -160,6 +177,9 @@ void Grafica::paintEvent(QPaintEvent * e)
     case Sectores_2D:
         setup2DPie(&Chart);
         break;
+    case Lineas:
+        setupLineas(&Chart);
+        break;
     default://Sectores_3D
         setup3DPie(&Chart);
         break;
@@ -173,6 +193,11 @@ void Grafica::paintEvent(QPaintEvent * e)
 
         for (int i = 0; i<m_DoubleBarColors.size();i++)
             Chart.addDoubleBarColor(m_DoubleBarColors.at(i));
+    }
+    else if(m_type == Lineas)
+    {
+        Chart.addLines(m_lines);
+        Chart.addLineStops(m_lineStops);
     }
     else
     {
@@ -280,5 +305,19 @@ void Grafica::setup3DPie(Nightcharts *chart)
             int size = use * 3/4;
             chart->setCords(start,start,size,size);
         }
+    }
+}
+
+void Grafica::setupLineas(Nightcharts *chart)
+{
+    chart->setType(Nightcharts::Lines);
+    if(!m_useLeyenda)
+    {
+         chart->setCords(0,0,this->width(),this->height()-30);
+    }
+    else
+    {
+        m_tipoLeyenda = Vertical;
+        chart->setCords(0,0,this->width()/1.5,this->height()-30);
     }
 }
