@@ -854,8 +854,10 @@ void Nightcharts::drawLines(QPainter *painter)
             int use = qMin(lineas.at(i).points.size(), LinesStop.size());
             int pointCount = use + 2;
 
-            QPoint points[pointCount];
-
+           // QPoint points[pointCount];
+            QVector<QPoint> points;
+            points.reserve(pointCount);
+            points.resize(pointCount);
 
             for (int a=0;a<pointCount-2;a++)
             {
@@ -888,7 +890,7 @@ void Nightcharts::drawLines(QPainter *painter)
             gradient.setColorAt(1,c);
             painter->setBrush(gradient);
 
-            painter->drawPolygon(points,pointCount);
+            painter->drawPolygon(points.data(),pointCount);
         }
     }
     if (labels)
@@ -905,7 +907,10 @@ void Nightcharts::drawLines(QPainter *painter)
         int use = qMin(lineas.at(i).points.size(), LinesStop.size());
         int pointCount = use;
 
-        QPoint points[pointCount];
+        //QPoint points[pointCount];
+        QVector<QPoint> points;
+        points.reserve(pointCount);
+        points.resize(pointCount);
 
         QPen pen;
         pen.setColor(lineas.at(i).color);
@@ -926,7 +931,7 @@ void Nightcharts::drawLines(QPainter *painter)
 
         }
         painter->setPen(pen);
-        painter->drawPolyline(points,pointCount);
+        painter->drawPolyline(points.data(),pointCount);
         QColor c = lineas.at(i).color;
         c.setAlpha(50);
         painter->setBrush(c);
