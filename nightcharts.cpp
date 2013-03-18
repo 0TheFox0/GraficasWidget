@@ -361,7 +361,7 @@ void Nightcharts::setCords(double x, double y, double w, double h)
 {
     this->m_left = x+5;
     this->m_top = y+15;
-    this->m_width = w-20;
+    this->m_width = w-m_left;
     this->m_heigth = h-45;
 
     this->m_xAxisPos = h/2;
@@ -813,6 +813,7 @@ void Nightcharts::drawDoubleBar(QPainter *painter)
         painter->drawLine(m_left,m_top+m_heigth+25,m_left-4,m_top+m_heigth+15);
     }
     painter->drawLine(m_left,m_top+m_xAxisPos,m_left+m_width,m_top+m_xAxisPos);
+
     //End Axis
 }
 
@@ -1029,6 +1030,59 @@ void Nightcharts::drawLinesLegend(QPainter *painter)
         QString s = lineas.at(i).name;
         painter->drawText(x+painter->fontMetrics().height()+dist,y+painter->fontMetrics().height()/2+dist,s);
     }
+}
+
+void Nightcharts::setYvalues(bool b)
+{
+   yValues = b;
+   if(!b)
+        m_left = 5;
+}
+
+void Nightcharts::drawYValues(QPainter *painter)
+{
+    painter->save();
+    painter->setPen(Qt::DotLine);
+    painter->setFont(chart_font);
+
+    QString s = QString::number(m_maxValue);
+    s.prepend("-");
+    int range = m_mayor;
+    if(m_menor < 0)
+        range-= m_menor;
+
+
+    int w = painter->fontMetrics().width(s);
+    int h = painter->fontMetrics().height();
+    s= s.mid(1);
+    m_left = 5 + w;
+
+    painter->drawText(0,m_top+m_xAxisPos-h/2,w,h,Qt::AlignRight,"0");
+
+    QString aux = s.left(1);
+    int toDiv = aux.toInt();
+    double porcion = m_maxValue/toDiv;
+    porcion = (porcion>0)?porcion : -porcion;
+    double pAux = porcion/range;
+    double porcionHeigth = m_heigth*pAux;
+    porcionHeigth-=1;
+
+    int i = m_top+m_xAxisPos - porcionHeigth;
+    for(int a=0;a<m_mayor;a+= porcion)
+    {
+        painter->drawLine(m_left,i,m_left+m_width,i);
+        painter->drawText(0,i-h/2,w,h,Qt::AlignRight,QString::number(a+porcion));
+        i-=porcionHeigth;
+    }
+    i = m_top+m_xAxisPos + porcionHeigth;
+    for(int a=0;a>m_menor;a-= porcion)
+    {
+        painter->drawLine(m_left,i,m_left+m_width,i);
+        painter->drawText(0,i-h/2,w,h,Qt::AlignRight,QString::number(a-porcion));
+        i+=porcionHeigth;
+    }
+
+    painter->restore();
 }
 
 void Nightcharts::drawLegend(QPainter *painter)

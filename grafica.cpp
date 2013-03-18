@@ -213,6 +213,9 @@ void Grafica::paintEvent(QPaintEvent * e)
     Chart.addPiece("Item4",Qt::yellow,7);
     Chart.addPiece("Item5",Qt::blue,4);*/
 
+    Chart.setYvalues(m_valuesEnY);
+    if(m_valuesEnY)
+        Chart.drawYValues(&painter);
     Chart.draw(&painter);
     if(m_useLeyenda)
     {
@@ -226,6 +229,7 @@ void Grafica::paintEvent(QPaintEvent * e)
         }
         Chart.drawLegend(&painter);
     }
+
 }
 
 void Grafica::setupBarras(Nightcharts *chart)

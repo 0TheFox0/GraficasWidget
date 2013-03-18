@@ -109,11 +109,15 @@ public:
     void addDoubleBarColor(QPair<QString,QColor> pair);
     void drawDoubleBarLegend(QPainter *painter);
     void drawLinesLegend(QPainter * painter);
+    void drawYValues(QPainter * painter);
+    void setYvalues(bool b);
 private:
+
     double m_left,m_top,m_width,m_heigth,m_xAxisPos,pW,legend_X,legend_Y;
     bool shadows;
     bool labels;
     bool values;
+    bool yValues;
     QVector<pieceNC> pieces;
     QVector<QPair<QString , QColor> >DoubleBarColors;
 
